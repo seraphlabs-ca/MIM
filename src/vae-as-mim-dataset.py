@@ -63,9 +63,9 @@ parser.add_argument('--act', type=str, default="tanh",
 parser.add_argument('--learn-P-z', action='store_true', default=False,
                     help='If used, will use prior as anchor P(z) = p(z)')
 parser.add_argument('--p-z', type=str, default="anchor",
-                    help='Defines p(z). prior: p(z) is parameterized. anchor: p(z) = P(z) = Normal. marginal: p(z) = E_{x ~ q(x)}[q(z|x)]. (default: prior)')
+                    help='Defines p(z). prior: p(z) is parameterized. anchor: p(z) = P(z) = Normal. marginal: p(z) = E_{x ~ q(x)}[q(z|x)]. gmm-marginal: VampPrior. (default: anchor)')
 parser.add_argument('--q-x', type=str, default="marginal",
-                    help='Defines q(x). prior: q(x) is parameterized. anchor: q(x) = P(x). marginal: q(x) = E_{z ~ p(z)}[p(x|z)]. (default: marginal)')
+                    help='Defines q(x). prior: q(x) is parameterized. anchor: q(x) = P(x). marginal: q(x) = E_{z ~ p(z)}[p(x|z)].  gmm-marginal: VampPrior. (default: marginal)')
 parser.add_argument('--layers', type=int, default=2,
                     help='Number of linear layers (default: 2)')
 parser.add_argument('--z-dim', type=int, default=2, metavar='Z',
@@ -75,13 +75,13 @@ parser.add_argument('--mid-dim', type=int, default=400, metavar='M',
 parser.add_argument('--min-logvar', type=float, default=10,
                     help='Minimal value for logvar (default: 10)')
 parser.add_argument('--q-x-gmm', type=int, default=0,
-                    help='Use GMM with N components if N > 0 (default: 0)')
+                    help='Use GMM with N components if N > 0, Normal distribution if N = 0. (default: 0)')
 parser.add_argument('--q-zx-gmm', type=int, default=0,
-                    help='Use GMM with N components if N > 0 (default: 0)')
+                    help='Use GMM with N components if N > 0, Normal distribution if N = 0. (default: 0)')
 parser.add_argument('--p-z-gmm', type=int, default=0,
-                    help='Use GMM with N components if N > 0 (default: 0)')
+                    help='Use GMM with N components if N > 0, Normal distribution if N = 0. (default: 0)')
 parser.add_argument('--p-xz-gmm', type=int, default=0,
-                    help='Use GMM with N components if N > 0 (default: 0)')
+                    help='Use GMM with N components if N > 0, Normal distribution if N = 0. (default: 0)')
 parser.add_argument('--dataset', type=str, default="toyMIM",
                     help='dataset to use (N=int,S=string): mnist. fashion-mnist, pca-fashion-mnist<N>, fashion-mnist, toy<N|S>. (default: toyMIM)')
 parser.add_argument('--tag', type=str, default="",
@@ -161,8 +161,8 @@ print("\nresults_path = {results_path}".format(results_path=results_path))
 #=============================================================================#
 # Build dataset and loss functions
 #=============================================================================#
+os.makedirs(os.path.join(base_path, "assets/datasets"), exist_ok=True)
 data_path = os.path.join(base_path, "assets/datasets", args.dataset)
-os.makedirs(data_path, exist_ok=True)
 
 z_dim = args.z_dim
 mid_dim = args.mid_dim
@@ -264,18 +264,11 @@ else:
             logscales=[c.scale.log() for c in P_x.comps],
         )
     elif args.q_x == "prior":
-        if args.q_x_gmm == 0:
+        if args.q_x_gmm <= 0:
             q_x = aux.GaussianPriorLayer(
                 output_dim=x_dim,
                 min_scale=min_scale,
                 active=True,
-            )
-        elif args.q_x_gmm < 0:
-            q_x = aux.GlowDist(
-                in_channel=x_dim,
-                n_flow=abs(args.q_x_gmm),
-                n_block=1,
-                filter_size=args.mid_dim,
             )
         else:
             q_x = aux.GMMPriorLayer(
@@ -334,19 +327,12 @@ if args.p_z == "anchor":
         min_scale=min_scale,
         active=False,
     )
-elif args.p_z in ["prior"]:
-    if args.p_z_gmm == 0:
+elif args.p_z == "prior":
+    if args.p_z_gmm <= 0:
         p_z = aux.GaussianPriorLayer(
             output_dim=z_dim,
             min_scale=min_scale,
             active=True,
-        )
-    elif args.p_z_gmm < 0:
-        p_z = aux.GlowDist(
-            in_channel=z_dim,
-            n_flow=abs(args.p_z_gmm),
-            n_block=1,
-            filter_size=args.mid_dim,
         )
     else:
         # equally distributed circles over 2D plane

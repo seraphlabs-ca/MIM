@@ -59,6 +59,17 @@ Please follow installation instructions in the following link: [pytorch](https:/
 pip install -r requirements.txt
 ```
 
+## Data
+
+The experiments can be run on the following datasets:
+
+* (binary MNIST)[http://yann.lecun.com/exdb/mnist/]
+* (OMNIGLOT)[https://github.com/yburda/iwae/blob/master/datasets/OMNIGLOT/chardata.mat]
+* (Fashion-MNIST)[https://github.com/zalandoresearch/fashion-mnist]
+
+All datasets are included as part of the repo for convenience.
+Links are provided as a workaround, in case of failure.
+
 ## Experiments
 
 Directory structure (if code fail due to a missing directory please create manually):

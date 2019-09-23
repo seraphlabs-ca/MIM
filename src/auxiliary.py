@@ -17,7 +17,6 @@ import torch
 import torchvision
 from torchvision.utils import save_image
 
-import linear_glow
 
 from cond_pixelcnn.utils.knnie import kraskov_mi as ksg_mi
 
@@ -392,100 +391,6 @@ class GMMDist(torch.distributions.Distribution):
             comps=comps,
             logcoefs=logcoefs,
         )
-
-
-class GlowDist(torch.distributions.Distribution):
-    """
-    A Glow-based parametric distribution.
-    """
-
-    def __init__(self, in_channel, n_flow, n_block,
-                 affine=True, mat_lu=True,
-                 filter_size=512):
-        super().__init__()
-
-        self.glow = linear_glow.Glow(
-            in_channel=in_channel,
-            n_flow=n_flow,
-            n_block=n_block,
-            affine=affine,
-            mat_lu=mat_lu,
-            filter_size=filter_size,
-        )
-
-        self.in_channel = in_channel
-        # store z shapes
-        self.z_shapes = None
-        self.batch_size = 1
-
-    def sample(self, batch_size=None):
-        with torch.no_grad():
-            return self.rsample(batch_size=batch_size)
-
-    def rsample(self, batch_size=None):
-        if batch_size is None:
-            batch_size = self.batch_size
-
-        # store z shapes
-        if self.z_shapes is None:
-            log_p_sum, logdet, z_outs, logits = self.glow(torch.zeros(1, self.in_channel))
-            self.z_shapes = [tuple(z.shape[1:]) for z in z_outs]
-
-        b = batch_size
-        z_list = [torch.randn((b,) + zs) for zs in self.z_shapes]
-
-        samp = self.glow.reverse(z_list)
-
-        return samp
-
-    def log_prob(self, value):
-        log_p_sum, logdet, z_outs, logits = self.glow(value)
-
-        return (log_p_sum + logdet)
-
-    def __call__(self, input):
-        if torch.is_tensor(input):
-            b = input.shape[0]
-        else:
-            b = int(input)
-
-            self.batch_size = b
-
-        return self
-
-    def plot(self, N=None, dims=[0, 1], label=None, **kwargs):
-        """
-        Plot a representation of the distribution.
-
-        N - number of samples to return.
-        dims - dimensions to visualize
-        """
-        defaults = dict(
-            edgecolor="k",
-            facecolor='none',
-            lw=5.0,
-            alpha=1.0,
-        )
-
-        keys = list(defaults.keys())
-        defaults.update(kwargs)
-        defaults = {k: defaults[k] for k in keys}
-
-        b = 200
-
-        z_list = [torch.randn((b,) + zs) for zs in self.z_shapes]
-        for z in z_list:
-            z /= torch.norm(z, dim=1, keepdim=True) + 1e-10
-
-        x = self.glow.reverse(z_list).detach().cpu().numpy()
-
-        d = x.shape[1]
-        dims = [min(d, cur_dim) for cur_dim in dims]
-
-        h = plt.scatter(x[:, dims[0]], x[:, dims[1]], **defaults)
-
-        if label is not None:
-            h.set(label=label)
 
 
 #=============================================================================#

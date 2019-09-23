@@ -218,7 +218,7 @@ def load_omniglot(args, n_validation=1345, **kwargs):
     # start processing
     def reshape_data(data):
         return data.reshape((-1, 28, 28)).reshape((-1, 28 * 28), order='fortran')
-    omni_raw = loadmat(os.path.join(datasets_path, 'OMNIGLOT', 'chardata.mat'))
+    omni_raw = loadmat(os.path.join(datasets_path, 'omniglot', 'chardata.mat'))
 
     # train and test data
     train_data = reshape_data(omni_raw['data'].T.astype('float32'))
