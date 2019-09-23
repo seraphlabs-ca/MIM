@@ -2,8 +2,6 @@
 script_path=${0:A:h}
 cd ${script_path}
 
-# /home/serafmvb/www/research/projects/mim
-
 chmod a+rx .
 
 for fname in images index.html; do
