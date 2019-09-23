@@ -1,0 +1,6 @@
+#!/usr/bin/env zsh
+script_path=${0:A:h}
+cd ${script_path}
+
+./build-doc
+./rsync-push-doc

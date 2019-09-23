@@ -1,0 +1,69 @@
+{# Override default options before loading template#}
+{{ options.store("html.video.controls", True) }}
+{{ options.store("html.video.autoplay", True) }}
+{{ options.store("html.video.loop", True) }}
+{% extends "sidebar-report.html" %}
+
+{% from 'html_support.jinja2' import play_video, show_image, smart_table, pretty_code, pretty_code_file, smart_select with context %}
+
+
+{% block css %}
+{{ super() }}
+#main-content {
+    font-size: x-large;
+}
+pre {
+    background: lightgray;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+    padding: 10px;
+}
+{% endblock %}
+
+{% block main_header_author %}
+<br>
+<div style="width: 80%; text-align: center; display: inline-block;">
+
+<div style="width: 20%; min-width: 230px; text-align: center; display: inline-block;vertical-align:middle; margin: 10px;">
+Micha Livne
+<br>
+<a href="mailto:livne@seraphlabs.ca">livne@seraphlabs.ca</a>
+<br>
+University of Toronto
+<br>
+Vector Institute
+</div>
+
+<div style="width: 20%; min-width: 230px; text-align: center; display: inline-block;vertical-align:middle; margin: 10px;">
+Kevin Swersky
+<br>
+<a href="mailto:lkswersky@google.com">lkswersky@google.com</a>
+<br>
+Google Research
+</div>
+
+<div style="width: 20%; min-width: 230px; text-align: center; display: inline-block;vertical-align:middle; margin: 10px;">
+David J. Fleet
+<br>
+<a href="mailto:fleet@cs.toronto.edu">fleet@cs.toronto.edu</a>
+<br>
+University of Toronto
+<br>
+Vector Institute
+</div>
+
+</div>
+{% endblock %}
+
+{% block main_header_title %}
+MIM: Mutual Information Machine
+{% endblock %}
+
+{% block main_header_date %}09/2019{% endblock %}
+
+{% block main_content %}
+
+{{ file_contents("README.md") }}
+
+{% endblock %}
