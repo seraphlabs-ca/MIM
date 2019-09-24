@@ -1,7 +1,5 @@
 # MIM: Mutual Information Machine
 
-* When viewing in github, please open local <a href="index.html" target="_blank">index.html</a> in a web-browser for better formatting.
-
 ## Why should you care? Posterior Collapse!
 
 <div style="text-align: center; display:inline-block;">
