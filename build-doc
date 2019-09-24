@@ -1,8 +1,0 @@
-#!/usr/bin/env zsh
-script_path=${0:A:h}
-
-echo "\n*** Main\n"
-
-# build report
-pdv-html index.jinja2
-
