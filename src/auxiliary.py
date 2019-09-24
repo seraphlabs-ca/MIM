@@ -1054,11 +1054,11 @@ def plot_model_dist(
             ax.text(0.03, 0.03, "RMSE = {x_recon_err:.2g}".format(x_recon_err=x_recon_err),
                     verticalalignment='bottom', horizontalalignment='left',
                     transform=ax.transAxes,
-                    color='black', fontsize=12)
+                    color='black', fontsize=17, fontweight="bold")
             ax.text(0.03, 0.97, "MI = {MI_ksg:.2g}".format(MI_ksg=stats["MI_ksg"]),
                     verticalalignment='top', horizontalalignment='left',
                     transform=ax.transAxes,
-                    color='black', fontsize=12)
+                    color='black', fontsize=17, fontweight="bold")
 
     #=============================================================================#
     # Visualize z
