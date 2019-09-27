@@ -2,6 +2,11 @@
 
 * Viewing this README.md in the <a href="https://github.com/seraphlabs-ca/MIM" target="_blank">github repo</a> will suffer from formatting issues. We recommend instead to view <a href="https://research.seraphlabs.ca/projects/mim/index.html" target="_blank">index.html</a> (can also be viewed locally).
 
+**Links:**
+
+* <a href="https://github.com/seraphlabs-ca/MIM" target="_blank">github repo</a>
+* <a href="https://research.seraphlabs.ca/projects/mim/index.html" target="_blank">Project webpage</a>
+
 ## Why should you care? Posterior Collapse!
 
 <div style="text-align: center; display:inline-block;">
