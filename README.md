@@ -233,13 +233,13 @@ Results below demonstrate how adding joint entropy as regularizer can prevent po
 
 <div style="text-align: center; width: 100%;">
     <div style="width: 48%; display:inline-block;">
-        <p style="text-align: center;">MIM (5, 20, 500 hidden units)</p>
+        <p style="text-align: center;">MIM - H (5, 20, 500 hidden units)</p>
         <img alt="MIM" width="32% "src="images/toy4/plots/mim-samp_logvar6_mid-dim5_layers2_q-x0marginal_q-zx0_p-z0anchor_p-xz0-inv_H/reconstruction_best.png">
         <img alt="MIM" width="32% "src="images/toy4/plots/mim-samp_logvar6_mid-dim20_layers2_q-x0marginal_q-zx0_p-z0anchor_p-xz0-inv_H/reconstruction_best.png">
         <img alt="MIM" width="32% "src="images/toy4/plots/mim-samp_logvar6_mid-dim500_layers2_q-x0marginal_q-zx0_p-z0anchor_p-xz0-inv_H/reconstruction_best.png">
     </div>
     <div style="width: 48%; display:inline-block;">
-        <p style="text-align: center;">VAE (5, 20, 500 hidden units)</p>
+        <p style="text-align: center;">VAE + H (5, 20, 500 hidden units)</p>
         <img alt="VAE" width="32% "src="images/toy4/plots/vae_logvar6_mid-dim5_layers2_q-x0marginal_q-zx0_p-z0anchor_p-xz0-inv_H/reconstruction_best.png">
         <img alt="VAE" width="32% "src="images/toy4/plots/vae_logvar6_mid-dim20_layers2_q-x0marginal_q-zx0_p-z0anchor_p-xz0-inv_H/reconstruction_best.png">
         <img alt="VAE" width="32% "src="images/toy4/plots/vae_logvar6_mid-dim500_layers2_q-x0marginal_q-zx0_p-z0anchor_p-xz0-inv_H/reconstruction_best.png">
