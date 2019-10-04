@@ -352,7 +352,7 @@ for seed in 1 2 3 4 5 6 7 8 9 10; do
 done
 ```
 
-Results below demonstrate posterior collapse in VAE which worsen as the latent dimensionality increases, and the lack of it in MIM. This time for real-world data observations.
+Results below demonstrate posterior collapse in VAE which worsen as the latent dimensionality increases, and the lack of it in MIM. Here, for real-world data observations.
 
 <div style="text-align: center; width: 100%;">
     <div style="text-align: left; width: 9%; display: inline-block"><span style="color: blue;">MIM</span><br><span style="color: red;">VAE</span></div>
