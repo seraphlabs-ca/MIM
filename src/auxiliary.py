@@ -851,14 +851,18 @@ def calc_dist_stats(x, z, q_x, q_z_given_x, p_z, p_x_given_z,
 
     H_enc = -(log_prob_q_x + log_prob_q_z_given_x).mean()
     H_dec = -(log_prob_p_z + log_prob_p_x_given_z).mean()
-    H_Msamp = -(
-        0.5 * (
-            (log_prob_q_x + log_prob_q_z_given_x).exp() +
-            (log_prob_p_z + log_prob_p_x_given_z).exp()
-        )
-    ).log().mean()
+
+    H_Msamp = - (torch.logsumexp(torch.stack([
+        (log_prob_q_x + log_prob_q_z_given_x) + torch.log(torch.tensor(0.5)),
+        (log_prob_p_z + log_prob_p_x_given_z) + torch.log(torch.tensor(0.5)),
+    ], dim=0),
+        dim=0
+    )).mean()
 
     H_mean = 0.5 * (H_enc + H_dec)
+
+    Rtheta = H_mean - H_Msamp
+    Rtheta_norm = (Rtheta / H_Msamp).abs()
 
     # Dkl
     z_q = q_z_given_x.sample()
@@ -881,6 +885,8 @@ def calc_dist_stats(x, z, q_x, q_z_given_x, p_z, p_x_given_z,
         H_mean=H_mean.mean().detach().cpu().numpy(),
         MI_ksg=MI_ksg,
         MI_ksg_l2_err=MI_ksg_l2_err,
+        Rtheta=Rtheta.mean().detach().cpu().numpy(),
+        Rtheta_norm=Rtheta_norm.mean().detach().cpu().numpy(),
     )
 
     if P_x is not None:
