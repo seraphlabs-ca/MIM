@@ -861,9 +861,6 @@ def calc_dist_stats(x, z, q_x, q_z_given_x, p_z, p_x_given_z,
 
     H_mean = 0.5 * (H_enc + H_dec)
 
-    Rtheta = H_mean - H_Msamp
-    Rtheta_norm = (Rtheta / H_Msamp).abs()
-
     # Dkl
     z_q = q_z_given_x.sample()
     Dkl_q_p = (q_z_given_x.log_prob(z_q) - p_z.log_prob(z_q)).mean()
@@ -885,8 +882,6 @@ def calc_dist_stats(x, z, q_x, q_z_given_x, p_z, p_x_given_z,
         H_mean=H_mean.mean().detach().cpu().numpy(),
         MI_ksg=MI_ksg,
         MI_ksg_l2_err=MI_ksg_l2_err,
-        Rtheta=Rtheta.mean().detach().cpu().numpy(),
-        Rtheta_norm=Rtheta_norm.mean().detach().cpu().numpy(),
     )
 
     if P_x is not None:
