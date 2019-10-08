@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 """
-Comparison (ablation study) of training a given VAE model with VAE learning and with MIM learning.
-
 Code is based on https://github.com/jmtomczak/vae_vampprior.git
 
 @article{TW:2017,
@@ -82,6 +80,9 @@ parser.add_argument('--prior', type=str, default='vampprior', metavar='P',
 parser.add_argument('--input_type', type=str, default='binary', metavar='IT',
                     help='type of the input: binary, gray, continuous')
 
+parser.add_argument('--q_x_prior', type=str, default='marginal', metavar='XP',
+                    help='prior: marginal, vampprior')
+
 # experiment
 parser.add_argument('--S', type=int, default=5000, metavar='SLL',
                     help='number of samples used for approximating log-likelihood')
@@ -121,7 +122,10 @@ def run(args, kwargs):
         os.path.dirname(__file__) + '/../data/torch-generated/' +
         os.path.splitext(os.path.basename(__file__))[0] + '/'
     )
-    dir = (snapshots_path + args.model_signature + '_' + model_name + '/')
+    if args.q_x_prior == "vampprior":
+        dir = (snapshots_path + args.model_signature + '_' + model_name + '_q_x' + '/')
+    else:
+        dir = (snapshots_path + args.model_signature + '_' + model_name + '/')
 
     print("dir = {dir}".format(dir=dir))
     if not os.path.exists(dir):

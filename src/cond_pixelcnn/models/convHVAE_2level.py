@@ -18,6 +18,8 @@ from ..utils.nn import he_init, GatedDense, NonLinear, \
     Conv2d, GatedConv2d, GatedResUnit, ResizeGatedConv2d, MaskedConv2d, ResUnitBN, ResizeConv2d, GatedResUnit, GatedConvTranspose2d
 
 from .Model import Model
+from ..utils.nn import normal_init
+
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 #=======================================================================================================================
@@ -358,6 +360,31 @@ class MIM(VAE):
 
         self.p_samp = p_samp
 
+        if self.args.q_x_prior == "marginal":
+            pass
+        elif self.args.q_x_prior == "vampprior":
+            # add z pseudo-inputs
+            nonlinearity = nn.Hardtanh(min_val=0.0, max_val=1.0)
+
+            self.means_z1 = NonLinear(self.args.number_components, self.args.z1_size,
+                                      bias=False, activation=nonlinearity)
+            self.means_z2 = NonLinear(self.args.number_components, self.args.z2_size,
+                                      bias=False, activation=nonlinearity)
+
+            # init pseudo-inputs
+            normal_init(self.means_z1.linear, 0.05, 0.01)
+            normal_init(self.means_z2.linear, 0.05, 0.01)
+
+            # create an idle input for calling pseudo-inputs
+            self.idle_input_z = Variable(torch.eye(self.args.number_components,
+                                                   self.args.number_components), requires_grad=False)
+            if self.args.cuda:
+                self.idle_input_z = self.idle_input_z.cuda()
+
+        else:
+            raise ValueError("Unknown q_x_prior = {q_x_prior}. Expected: marginal, vampprior.".format(
+                q_x_prior=self.args.q_x_prior))
+
     def generate_x(self, N=25, return_z=False, z1=None, z2=None):
         if z2 is None:
             # Sampling z2 from a prior
@@ -393,36 +420,31 @@ class MIM(VAE):
         else:
             return samples_gen
 
-    # the prior
-    def log_p_z2(self, z2):
-        if self.args.prior == 'standard':
-            log_prior = log_Normal_standard(z2, dim=1)
+    # q(x) vampprior prior
+    def log_q_x_vampprior(self, x):
+        # z - MB x M
+        C = self.args.number_components
 
-        elif self.args.prior == 'vampprior':
-            # z - MB x M
-            C = self.args.number_components
+        # calculate params
+        Z1 = self.means_z1(self.idle_input_z).view(-1, self.args.z1_size)
+        Z2 = self.means_z2(self.idle_input_z).view(-1, self.args.z2_size)
 
-            # calculate params
-            X = self.means(self.idle_input).view(-1,
-                                                 self.args.input_size[0], self.args.input_size[1],
-                                                 self.args.input_size[2])
-            # X = X+0.1*torch.randn_like(X)
+        # calculate params for given data
+        q_x_mean, q_x_logvar = self.p_x(z1=Z1, z2=Z2)  # C x M)
 
-            # calculate params for given data
-            z2_p_mean, z2_p_logvar = self.q_z2(X)  # C x M)
-            # z2_p_mean = z2_p_mean + 0.1*torch.randn_like(z2_p_mean)
+        # expand x
+        x_expand = x.unsqueeze(1)
+        means = q_x_mean.unsqueeze(0)
 
-            # expand z
-            z_expand = z2.unsqueeze(1)
-            means = z2_p_mean.unsqueeze(0)
-            logvars = z2_p_logvar.unsqueeze(0)
+        if self.args.input_type == 'binary':
+            a = log_Bernoulli(x_expand, means, dim=2) - math.log(C)  # MB x C
+        elif self.args.input_type == 'gray' or self.args.input_type == 'continuous':
+            logvars = q_x_logvar.unsqueeze(0)
+            a = -log_Logistic_256(x_expand, means, logvars, dim=2) - math.log(C)  # MB x C
 
-            a = log_Normal_diag(z_expand, means, logvars, dim=2) - math.log(C)  # MB x C
-            a_max, _ = torch.max(a, 1)  # MB
-            # calculte log-sum-exp
-            log_prior = (a_max + torch.log(torch.sum(torch.exp(a - a_max.unsqueeze(1)), 1)))  # MB
-        else:
-            raise Exception('Wrong name of the prior!')
+        a_max, _ = torch.max(a, 1)  # MB
+        # calculte log-sum-exp
+        log_prior = (a_max + torch.log(torch.sum(torch.exp(a - a_max.unsqueeze(1)), 1)))  # MB
 
         return log_prior
 
@@ -448,8 +470,12 @@ class MIM(VAE):
         log_q_z2 = log_Normal_diag(z2_q, z2_q_mean, z2_q_logvar, dim=1)
         log_q_z_given_x = log_q_z1 + log_q_z2
 
-        # q(x) is marginal of p(x, z)
-        log_q_x = log_p_x_given_z + log_p_z - log_q_z_given_x
+        if self.args.q_x_prior == "marginal":
+            # q(x) is marginal of p(x, z)
+            log_q_x = log_p_x_given_z + log_p_z - log_q_z_given_x
+        elif self.args.q_x_prior == "vampprior":
+            # q(x) is vamprior of p(x|u)
+            log_q_x = self.log_q_x_vampprior(x)
 
         RE = log_p_x_given_z
         KL = -(log_p_z1 + log_p_z2 - log_q_z1 - log_q_z2)
@@ -516,16 +542,18 @@ class MIM(VAE):
             log_q_z2 = log_Normal_diag(z2_q, z2_q_mean, z2_q_logvar, dim=1)
             log_q_z_given_x = log_q_z1 + log_q_z2
 
-            # q(x) is marginal of p(x, z)
-            log_q_x = log_p_x_given_z
+            if self.args.q_x_prior == "marginal":
+                # q(x) is marginal of p(x, z)
+                log_q_x = log_p_x_given_z
+            elif self.args.q_x_prior == "vampprior":
+                # q(x) is vamprior of p(x|u)
+                log_q_x = self.log_q_x_vampprior(x)
 
             loss_p = -0.5 * (log_p_x_given_z + log_p_z + beta * (log_q_z_given_x + log_q_x))
 
             # REINFORCE
             if self.args.input_type == 'binary':
                 loss_p = loss_p + loss_p.detach() * log_p_x_given_z - (loss_p * log_p_x_given_z).detach()
-                # loss_reinforce = -0.5 * log_q_z_given_x
-                # loss_p = loss_p + loss_reinforce.detach() * log_p_x_given_z - (loss_reinforce * log_p_x_given_z).detach()
 
             # MIM loss
             loss += beta * loss_p.mean()

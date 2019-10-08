@@ -485,8 +485,6 @@ class MIM(VAE):
             # REINFORCE
             if self.args.input_type == 'binary':
                 loss_p = loss_p + loss_p.detach() * log_p_x_given_z - (loss_p * log_p_x_given_z).detach()
-                # loss_reinforce = -0.5 * log_q_z_given_x
-                # loss_p = loss_p + loss_reinforce.detach() * log_p_x_given_z - (loss_reinforce * log_p_x_given_z).detach()
 
             # MIM loss
             loss += beta * loss_p.mean()
