@@ -494,12 +494,31 @@ Code for this experiment is based on <a href="https://github.com/jmtomczak/vae_v
 Please cite our paper if you use this code in your research:
 
 ```
-TBD
+@ARTICLE{2019arXiv191003175L,
+       author = {{Livne}, Micha and {Swersky}, Kevin and {Fleet}, David J.},
+        title = "{MIM: Mutual Information Machine}",
+      journal = {arXiv e-prints},
+     keywords = {Computer Science - Machine Learning, Computer Science - Information Theory, Statistics - Machine Learning, 68T30},
+         year = "2019",
+        month = "Oct",
+          eid = {arXiv:1910.03175},
+        pages = {arXiv:1910.03175},
+archivePrefix = {arXiv},
+       eprint = {1910.03175},
+ primaryClass = {cs.LG},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2019arXiv191003175L},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
 ```
 
 ## Acknowledgements
 
-TBD
+Many thanks to Ethan Fetaya, Jacob Goldberger, Roger Grosse, Chris Maddison, 
+and Daniel Roy for interesting discussions and for their helpful comments.
+We are especially grateful to Sajad Nourozi for extensive discussions and for 
+his help to empirically validate the formulation and experimental work.
+This work was financially supported in part by the Canadian Institute for 
+Advanced Research (Program on Learning in Machines and Brains), and NSERC Canada.
 
 ## Your Feedback Is Appreciated
 
