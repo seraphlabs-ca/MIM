@@ -495,20 +495,13 @@ Code for this experiment is based on <a href="https://github.com/jmtomczak/vae_v
 Please cite our <a href="https://arxiv.org/abs/1910.03175" target="_blank">paper</a> if you use this code in your research:
 
 ```
-@ARTICLE{2019arXiv191003175L,
-       author = {{Livne}, Micha and {Swersky}, Kevin and {Fleet}, David J.},
-        title = "{MIM: Mutual Information Machine}",
-      journal = {arXiv e-prints},
-     keywords = {Computer Science - Machine Learning, Computer Science - Information Theory, Statistics - Machine Learning, 68T30},
-         year = "2019",
-        month = "Oct",
-          eid = {arXiv:1910.03175},
-        pages = {arXiv:1910.03175},
-archivePrefix = {arXiv},
-       eprint = {1910.03175},
- primaryClass = {cs.LG},
-       adsurl = {https://ui.adsabs.harvard.edu/abs/2019arXiv191003175L},
-      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+@misc{livne2019mim,
+    title={MIM: Mutual Information Machine},
+    author={Micha Livne and Kevin Swersky and David J. Fleet},
+    year={2019},
+    eprint={1910.03175},
+    archivePrefix={arXiv},
+    primaryClass={cs.LG}
 }
 ```
 
