@@ -6,6 +6,7 @@
 
 * <a href="https://github.com/seraphlabs-ca/MIM" target="_blank">github repo</a>
 * <a href="https://research.seraphlabs.ca/projects/mim/index.html" target="_blank">Project webpage</a>
+* <a href="https://arxiv.org/abs/1910.03175" target="_blank">Preprint paper</a>
 
 ## Why should you care? Posterior Collapse!
 
@@ -491,7 +492,7 @@ Code for this experiment is based on <a href="https://github.com/jmtomczak/vae_v
 
 ## Citation
 
-Please cite our paper if you use this code in your research:
+Please cite our <a href="https://arxiv.org/abs/1910.03175" target="_blank">paper</a> if you use this code in your research:
 
 ```
 @ARTICLE{2019arXiv191003175L,
