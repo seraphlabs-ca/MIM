@@ -90,7 +90,11 @@ class MIM(nn.Module):
             z = q_z_given_x.rsample()
 
             if self.q_x is None:
-                q_x = p_x_given_z
+                # q_x = p_x_given_z
+                q_x = self.p_x_given_z(z)
+                q_x._log_prob = q_x.log_prob
+                q_x.log_prob = lambda value: q_x._log_prob(
+                    value) + self.p_z(z.shape[0]).log_prob(z) - q_z_given_x.log_prob(z)
             else:
                 q_x = self.q_x(x.shape[0])
 
