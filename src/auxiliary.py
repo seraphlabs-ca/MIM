@@ -1138,6 +1138,7 @@ def plot_model_dist(
 
 def vis_model_toy2d(model, P_x, P_z, device, results_path, tag, z_dim, x_dim, ch_dim, im_dim,
                     loss_name="", show_detailed=False, plot_x_recon_err=False,
+                    self_supervision=False,
                     stats=None):
     """
     Visualize model that is trained on toy 2D data.
@@ -1147,7 +1148,11 @@ def vis_model_toy2d(model, P_x, P_z, device, results_path, tag, z_dim, x_dim, ch
     #=============================================================================#
     vis_samples = 10000
     data = torch.cat([P_x.sample() for i in range(vis_samples)])
-    x_obs = data.to(device).view(-1, x_dim)
+    if not self_supervision:
+        x_obs = data.to(device).view(-1, x_dim)
+    else:
+        x_obs = data[1].to(device).view(-1, x_dim)
+
     z, x_recon, q_x, q_z_given_x, p_z, p_x_given_z = model(x_obs)
 
     data_title = "loss = {loss}".format(loss=loss_name)
