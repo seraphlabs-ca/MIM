@@ -106,6 +106,9 @@ if args.q_x not in ["prior", "anchor", "marginal", "gmm-marginal"]:
 if args.p_z not in ["prior", "anchor", "marginal", "gmm-marginal"]:
     raise ValueError("Unknown p-z = {p_z}".format(p_z=args.p_z))
 
+self_supervision = True if args.dataset.startswith("T") else False
+args.self_supervision = self_supervision
+
 
 device = torch.device("cuda" if args.cuda else "cpu")
 
@@ -142,6 +145,10 @@ if args.inv_H_loss:
 
 if args.learn_P_z:
     results_path = "{results_path}-learn_P_z".format(results_path=results_path)
+
+if args.self_supervision:
+    results_path = "{results_path}-self".format(results_path=results_path)
+
 
 if args.tag:
     results_path = "{results_path}-{tag}".format(results_path=results_path, tag=args.tag)
@@ -188,7 +195,6 @@ else:
     cuda=args.cuda,
 )
 P_z = anchors["P_z"]
-self_supervision = True if args.dataset.startswith("T") else False
 
 # x conditional likelihood and prior
 if binary_x:
@@ -641,8 +647,10 @@ def test(epoch):
         for i, (data, _) in enumerate(test_loader):
             test_loss_count += 1
 
-            x_obs = data.to(device).view(-1, x_dim)
-            x_obs = x_obs.to(device)
+            if not self_supervision:
+                x_obs = data.to(device).view(-1, x_dim)
+            else:
+                x_obs = data[1].to(device).view(-1, x_dim)
 
             if binary_x:
                 x_obs = x_obs.clamp(1e-3, 1 - 1e-3)
@@ -736,6 +744,7 @@ if __name__ == "__main__":
             cur_train_loss = train(epoch)
 
             cur_test_loss = test(epoch)
+            import pudb; pudb.set_trace()
             if (cur_test_loss < best_test_loss) and (epoch >= args.warmup_steps):
                 print("===> Saving best model <===")
                 best_test_loss = cur_test_loss
@@ -763,6 +772,7 @@ if __name__ == "__main__":
                     loss_name=loss_name(),
                     show_detailed=args.show_detailed,
                     plot_x_recon_err=args.plot_x_recon_err,
+                    self_supervision=self_supervision,
                 )
 
             # early stopping
@@ -823,5 +833,6 @@ if __name__ == "__main__":
             loss_name=loss_name(),
             show_detailed=args.show_detailed,
             plot_x_recon_err=args.plot_x_recon_err,
+            self_supervision=self_supervision,
             stats=stats,
         )

@@ -1442,6 +1442,7 @@ def visualize_model(model, dataset_name, train_loader, test_loader, anchors,
                     loss_name="",
                     show_detailed=False,
                     plot_x_recon_err=False,
+                    self_supervision=False,
                     stats=None,
                     ):
     with torch.no_grad():
@@ -1460,7 +1461,7 @@ def visualize_model(model, dataset_name, train_loader, test_loader, anchors,
                 im_dim=im_dim,
                 show_detailed=show_detailed,
             )
-        elif dataset_name.startswith("toy"):
+        elif dataset_name.lower().startswith("toy"):
             vis_model_toy2d(
                 model=model,
                 P_x=anchors["P_x"],
@@ -1475,6 +1476,7 @@ def visualize_model(model, dataset_name, train_loader, test_loader, anchors,
                 loss_name=loss_name,
                 show_detailed=show_detailed,
                 plot_x_recon_err=plot_x_recon_err,
+                self_supervision=self_supervision,
             )
 
 
@@ -1491,6 +1493,7 @@ def load_test_vis_model(model_fname):
         batch_size = args.batch_size
         z_dim = args.z_dim
         cuda = not args.no_cuda and torch.cuda.is_available()
+        self_supervision = args.self_supervision
 
         loss_name = model.metadata["loss_name"]
         best_test_epoch = model.metadata["best_test_epoch"]
@@ -1553,5 +1556,6 @@ def load_test_vis_model(model_fname):
             loss_name=loss_name,
             show_detailed=False,
             plot_x_recon_err=False,
+            self_supervision=self_supervision,
             stats=stats,
         )
