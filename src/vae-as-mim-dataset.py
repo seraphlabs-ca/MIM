@@ -744,7 +744,6 @@ if __name__ == "__main__":
             cur_train_loss = train(epoch)
 
             cur_test_loss = test(epoch)
-            import pudb; pudb.set_trace()
             if (cur_test_loss < best_test_loss) and (epoch >= args.warmup_steps):
                 print("===> Saving best model <===")
                 best_test_loss = cur_test_loss
