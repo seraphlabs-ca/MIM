@@ -546,8 +546,8 @@ def train(epoch):
             x_obs = data.to(device).view(-1, x_dim)
             x_in = x_obs
         else:
-            x_obs = data[1].to(device).view(-1, x_dim)
-            x_in = data[0].to(device).view(-1, x_dim)
+            x_obs = data[0].to(device).view(-1, x_dim)
+            x_in = data[1].to(device).view(-1, x_dim)
 
         if binary_x:
             x_obs = x_obs.clamp(1e-3, 1 - 1e-3)
@@ -650,7 +650,7 @@ def test(epoch):
             if not self_supervision:
                 x_obs = data.to(device).view(-1, x_dim)
             else:
-                x_obs = data[1].to(device).view(-1, x_dim)
+                x_obs = data[0].to(device).view(-1, x_dim)
 
             if binary_x:
                 x_obs = x_obs.clamp(1e-3, 1 - 1e-3)
