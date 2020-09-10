@@ -23,20 +23,21 @@ class DistDataset(torch.utils.data.Dataset):
     Wraps a Distribution with a Dataset
     """
 
-    def __init__(self, dist, n=10000, with_index=False):
+    def __init__(self, dist, n=10000, with_index=False, samp_num=1):
         super().__init__()
 
         self.dist = dist
         # dataset "size"
         self.n = n
         self.with_index = with_index
+        self.samp_num = samp_num
 
     def __call__(self, *args, **kwargs):
         return self.dist(*args, **kwargs)
 
     def __getitem__(self, index):
         if self.with_index:
-            X, y = self.dist.sample(with_index=True)
+            X, y = self.dist.sample(with_index=True, samp_num=self.samp_num)
             return X, y.flatten()
         else:
             return self.dist.sample(), 0

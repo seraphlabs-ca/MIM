@@ -188,6 +188,7 @@ else:
     cuda=args.cuda,
 )
 P_z = anchors["P_z"]
+self_supervision = True if args.dataset.startswith("T") else False
 
 # x conditional likelihood and prior
 if binary_x:
@@ -535,13 +536,17 @@ def train(epoch):
         train_loss_count += 1
         optimizer.zero_grad()
 
-        x_obs = data.to(device).view(-1, x_dim)
-        x_obs = x_obs.to(device)
+        if not self_supervision:
+            x_obs = data.to(device).view(-1, x_dim)
+            x_in = x_obs
+        else:
+            x_obs = data[1].to(device).view(-1, x_dim)
+            x_in = data[0].to(device).view(-1, x_dim)
 
         if binary_x:
             x_obs = x_obs.clamp(1e-3, 1 - 1e-3)
 
-        z_obs, x_recon, q_x, q_z_given_x, p_z, p_x_given_z = model(x_obs=x_obs)
+        z_obs, x_recon, q_x, q_z_given_x, p_z, p_x_given_z = model(x_obs=x_in)
 
         loss = loss_function(
             x_obs=x_obs,

@@ -252,11 +252,11 @@ class GMMDist(torch.distributions.Distribution):
 
         self.k = self.logcoefs.shape[-1]
 
-    def sample(self, batch_size=None, with_index=False):
+    def sample(self, batch_size=None, with_index=False, samp_num=1):
         with torch.no_grad():
-            return self.rsample(batch_size=batch_size, with_index=with_index)
+            return self.rsample(batch_size=batch_size, with_index=with_index, samp_num=samp_num)
 
-    def rsample(self, batch_size=None, with_index=False):
+    def rsample(self, batch_size=None, with_index=False, samp_num=1):
         b = self.coefs.shape[0]
         if (batch_size is not None):
             if (b == 1) or (batch_size == b):
@@ -275,21 +275,29 @@ class GMMDist(torch.distributions.Distribution):
         # randomly select mixture component
         coefs = self.coefs
         index = torch.multinomial(coefs, num_samples=1, replacement=True).flatten()
-        samp = None
-        for i in range(self.k):
-            mask = index.eq(i)
 
-            if mask.any():
-                cur_samp = self.comps[i].rsample(sample_shape=sample_shape)
-                if samp is None:
-                    samp = torch.zeros_like(cur_samp)
+        # sample multiple times from same component
+        all_samp = []
+        for s in range(samp_num):
+            samp = None
+            for i in range(self.k):
+                mask = index.eq(i)
 
-                samp[mask, ...] = cur_samp[mask, ...]
+                if mask.any():
+                    cur_samp = self.comps[i].rsample(sample_shape=sample_shape)
+                    if samp is None:
+                        samp = torch.zeros_like(cur_samp)
+
+                    samp[mask, ...] = cur_samp[mask, ...]
+            all_samp.append(samp)
+
+        if len(all_samp) == 1:
+            all_samp = all_samp[0]
 
         if with_index:
-            return samp, index
+            return all_samp, index
         else:
-            return samp
+            return all_samp
 
     def log_prob(self, value):
         logcoefs = self.logcoefs
@@ -784,9 +792,11 @@ def load_dataset(dataset_name,
 
         binary_x = False
 
-    elif dataset_name.startswith("toy"):
+    elif dataset_name.lower().startswith("toy"):
         # 2D toy example: toy4 - 4+1 (in center) GMM, toy-4 - 4 GMM (no center),
         # toy4_20 - 4+1 GMM with 20D x. toyMIM - GMM that spells MIM
+        # Toy??? will use self-supervision where encoder and decoder samples are different samples from same component
+        samp_num = 2 if dataset_name.startswith("T") else 1
         k_modes = dataset_name[3:]
         if "_" in k_modes:
             k_modes, ch_dim = k_modes.split("_")
@@ -801,10 +811,10 @@ def load_dataset(dataset_name,
         anchors["P_x"] = P_x
 
         train_loader = torch.utils.data.DataLoader(
-            DistDataset(dist=P_x, with_index=True),
+            DistDataset(dist=P_x, with_index=True, samp_num=samp_num),
             batch_size=batch_size, shuffle=True, **kwargs)
         test_loader = torch.utils.data.DataLoader(
-            DistDataset(dist=P_x, with_index=True),
+            DistDataset(dist=P_x, with_index=True, samp_num=samp_num),
             batch_size=batch_size, shuffle=True, **kwargs)
 
         binary_x = False
