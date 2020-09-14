@@ -363,6 +363,11 @@ elif args.p_z == "prior":
 elif args.p_z == "marginal":
     p_z = None
 elif args.p_z == "gmm-marginal":
+    if not self_supervision:
+        input_func = lambda i: train_loader.dataset[i][0].view(-1, x_dim).to(device)
+    else:
+        input_func = lambda i: train_loader.dataset[i][0][0].view(-1, x_dim).to(device)
+
     p_z = aux.GMMPseudoPriorLayer(
         cond_comp=q_z_given_x,
         input_dim=x_dim,
@@ -370,8 +375,7 @@ elif args.p_z == "gmm-marginal":
         components_num=args.p_z_gmm,
         min_scale=min_scale,
         pseudo_input=torch.cat([
-            train_loader.dataset[i][0].view(-1, x_dim).to(device)
-            for i in range(args.p_z_gmm)
+            input_func(i) for i in range(args.p_z_gmm)
         ]),
     )
 

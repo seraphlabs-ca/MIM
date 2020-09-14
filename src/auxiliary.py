@@ -613,7 +613,8 @@ class GMMPseudoPriorLayer(torch.nn.Module):
 
         self.pseudo_input = torch.nn.Parameter(torch.randn(components_num, input_dim))
         if pseudo_input is not None:
-            self.pseudo_input.data.set_(pseudo_input)
+            with torch.no_grad():
+                self.pseudo_input.set_(pseudo_input)
 
     def forward(self, input):
         if torch.is_tensor(input):
@@ -1381,6 +1382,8 @@ def test_model(model, train_loader, test_loader, device, results_fname,
     test_label = []
     for data, label in iter(test_loader):
         test_label.extend(label.cpu().tolist())
+        if isinstance(data, list):
+            data = data[0]
         x_obs = data.to(device).view(-1, x_dim)
         z, x_recon, q_x, q_z_given_x, p_z, p_x_given_z = model(x_obs)
 
