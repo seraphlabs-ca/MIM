@@ -13,11 +13,15 @@
 
 <div style="text-align: center; display:inline-block;">
     <div style="width: 30%; display:inline-block;">
-        <p style="text-align: center;">MIM</p>
+        <p style="text-align: center;">AE (High MI, No Latent Prior)</p>
+        <img width="100%" alt="AE" src="images/show-off/toyAE_z2_ae_logvar6_mid-dim50_layers2_q-x0marginal_q-zx0_p-z0anchor_p-xz0_progress_reconstruction-video.gif">
+    </div>
+    <div style="width: 30%; display:inline-block;">
+        <p style="text-align: center;">MIM (High MI, Latent Prior Alignment)</p>
         <img width="100%" alt="MIM" src="images/show-off/toyMIM_z2_mim-samp_logvar6_mid-dim50_layers2_q-x0marginal_q-zx0_p-z0anchor_p-xz0_progress_reconstruction-video.gif">
     </div>
     <div style="width: 30%; display:inline-block;">
-        <p style="text-align: center;">VAE</p>
+        <p style="text-align: center;">VAE (High MI, Latent Prior Regularization)</p>
         <img width="100%"  alt="VAE" src="images/show-off/toyVAE_z2_vae_logvar6_mid-dim50_layers2_q-x0marginal_q-zx0_p-z0anchor_p-xz0_progress_reconstruction-video.gif">
     </div>
 
@@ -29,12 +33,12 @@
     Bottom row: <span style="color: green">Green</span> contours are one standard deviation ellipses of q(z|x) for test points. Dashed black circles depict one standard deviation of P(z).
     <br>
     <br>
-    MIM produces lower predictive variance and lower reconstruction errors, consistent with high mutual information.
-    <br>
-    VAE is optimized with annealing of beta in beta-VAE. Once annealing is completed (i.e., beta = 1), the VAE posteriors show  high predictive variance, which is indicative of partial posterior collapse.
-    The increased variance leads to reduced mutual information and worse reconstruction error.
     </p>
-
+    <ul style="text-align: left; width: 60%; margin: auto;">
+        <li>AE (auto-encoder) produces zero predictive variance (i.e., delta function) and lower reconstruction errors, consistent with high mutual information. The structure in the latent space is the result of the architecture inductive bias. The lack of a prior leads to an undetermined alignment with P(z) (i.e., an arbitrary structure in the latent space).</li>
+        <li>MIM produces lower predictive variance and lower reconstruction errors, consistent with high mutual information, alongside alignment with P(z) (i.e., structured latent space).</li>
+        <li>VAE is optimized with annealing of beta in beta-VAE. Once annealing is completed (i.e., beta = 1), the VAE posteriors show  high predictive variance, which is indicative of partial posterior collapse. The increased variance leads to reduced mutual information and worse reconstruction error as a result of a strong alignment with P(Z) (i.e, overly structured/regularized latent space).</li>
+    </ul>
 </div>
 
 
@@ -118,7 +122,7 @@ To produce the animation at the top:
     --mim-samp
 #VAE
 ./vae-as-mim-dataset.py \
-    --dataset toyMIM \
+    --dataset toyVAE \
     --z-dim 2 \
     --mid-dim 50 \
     --min-logvar 6 \
@@ -129,7 +133,7 @@ To produce the animation at the top:
     --vis-progress
 #AE
 ./vae-as-mim-dataset.py \
-    --dataset toyMIM \
+    --dataset toyAE \
     --z-dim 2 \
     --mid-dim 50 \
     --min-logvar 6 \
