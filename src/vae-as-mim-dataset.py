@@ -56,6 +56,8 @@ parser.add_argument('--mim-loss', action='store_true', default=False,
                     help='MIM loss.')
 parser.add_argument('--mim-samp', action='store_true', default=False,
                     help='MIM sampling (add an unsupervised sampling step).')
+parser.add_argument('--ae-loss', action='store_true', default=False,
+                    help='Train an auto-encoder.')
 parser.add_argument('--inv-H-loss', action='store_true', default=False,
                     help='If used, will add H regularizer to VAE or remove it for MIM.')
 parser.add_argument('--act', type=str, default="tanh",
@@ -88,6 +90,8 @@ parser.add_argument('--tag', type=str, default="",
                     help='A tag to add to results path. (default: ""')
 args = parser.parse_args()
 
+if args.ae_loss and args.mim_loss:
+    raise ValueError("ae-loss and mim-loss cannot be used together")
 
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
@@ -123,6 +127,8 @@ if args.mim_loss:
     results_path = os.path.join(results_path, "mim")
     if args.mim_samp:
         results_path = "{results_path}-samp".format(results_path=results_path)
+elif args.ae_loss:
+    results_path = os.path.join(results_path, "ae")
 else:
     results_path = os.path.join(results_path, "vae")
 
@@ -309,6 +315,7 @@ if args.q_zx_gmm <= 0:
             input_dim=i,
             output_dim=o,
             min_scale=min_scale,
+            delta=args.ae_loss,
         ),
         act=act,
     )
@@ -323,6 +330,7 @@ else:
             output_dim=o,
             components_num=args.q_zx_gmm,
             min_scale=min_scale,
+            delta=args.ae_loss,
         ),
         act=act,
     )
@@ -536,7 +544,10 @@ def train(epoch):
         anchors["P_z"] = model.p_z(1)
 
     scheduler.step()
-    beta = min(1.0, max(epoch / args.warmup_steps, 0.0))
+    if args.ae_loss:
+        beta = 0.0
+    else:
+        beta = min(1.0, max(epoch / args.warmup_steps, 0.0))
 
     model.train()
     train_loss = 0
@@ -639,6 +650,11 @@ def test(epoch):
     if args.learn_P_z:
         anchors["P_z"] = model.p_z(1)
 
+    if args.ae_loss:
+        beta = 0.0
+    else:
+        beta = 1.0
+
     model.eval()
     test_loss = 0
     test_loss_count = 0
@@ -673,7 +689,7 @@ def test(epoch):
                 p_x_given_z=p_x_given_z,
                 samp_p=False,
                 binary_x=binary_x,
-                beta=1.0,
+                beta=beta,
             )
             # negative log-likelihood (bits per dimension)
             nll_x_given_z = -p_x_given_z.log_prob(x_obs).mean()
@@ -702,7 +718,7 @@ def test(epoch):
                     p_x_given_z=p_x_given_z,
                     samp_p=True,
                     binary_x=binary_x,
-                    beta=1.0,
+                    beta=beta,
                 )
 
                 test_loss += loss.cpu().detach().item()

@@ -127,6 +127,18 @@ To produce the animation at the top:
     --epochs 49 \
     --warmup-steps 25  \
     --vis-progress
+#AE
+./vae-as-mim-dataset.py \
+    --dataset toyMIM \
+    --z-dim 2 \
+    --mid-dim 50 \
+    --min-logvar 6 \
+    --seed 1 \
+    --batch-size 128 \
+    --epochs 49 \
+    --warmup-steps 25  \
+    --vis-progress \
+    --ae-loss
 ```
 
 ### 2D Experiments

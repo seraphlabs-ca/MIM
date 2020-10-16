@@ -451,19 +451,23 @@ class GaussianCondLayer(torch.nn.Module):
     A layer that returns a conditional Gaussian distribution.
     """
 
-    def __init__(self, input_dim, output_dim, min_scale=1e-10):
+    def __init__(self, input_dim, output_dim, min_scale=1e-10, delta=False):
         super().__init__()
 
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.min_scale = min_scale
+        self.delta = delta
 
         self.fc_loc = torch.nn.Linear(self.input_dim, self.output_dim)
         self.fc_logscale = torch.nn.Linear(self.input_dim, self.output_dim)
 
     def forward(self, input):
         loc = self.fc_loc(input)
-        scale = torch.exp(self.fc_logscale(input)) + self.min_scale
+        if self.delta:
+            scale = torch.zeros_like(loc) + self.min_scale
+        else:
+            scale = torch.exp(self.fc_logscale(input)) + self.min_scale
 
         return DiagGaussianDist(
             loc=loc,
@@ -568,18 +572,20 @@ class GMMCondLayer(torch.nn.Module):
     A layer that returns a conditional Gaussian Mixture Model distribution.
     """
 
-    def __init__(self, input_dim, output_dim, components_num, min_scale=1e-10):
+    def __init__(self, input_dim, output_dim, components_num, min_scale=1e-10, delta=False):
         super().__init__()
 
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.components_num = components_num
         self.min_scale = min_scale
+        self.delta = delta
 
         self.comps = torch.nn.ModuleList([GaussianCondLayer(
             input_dim=self.input_dim,
             output_dim=self.output_dim,
             min_scale=self.min_scale,
+            delta=delta,
         ) for i in range(self.components_num)])
 
     def forward(self, input):
