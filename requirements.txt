@@ -4,7 +4,7 @@ torch==1.0.0
 wrapt==1.11.2
 matplotlib==3.0.3
 torchvision==0.2.1
-cvxopt==1.2.3
+cvxopt==1.2.7
 circlify==0.10.0
 Pillow==6.2.0
 scikit_learn==0.21.3
